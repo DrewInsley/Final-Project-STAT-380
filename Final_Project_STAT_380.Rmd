@@ -1,0 +1,57 @@
+---
+title: "Final Project"
+output: html_notebook
+---
+
+## Front Matter
+
+```{r message=FALSE, warning=FALSE}
+# clear enviornment
+rm(list = ls())
+
+# download packages
+library(mdsr)
+library(rvest)
+
+# read data
+page <- "http://worldpopulationreview.com/countries/suicide-rate-by-country/"
+xpath <- '//*[@id="__next"]/div/div[1]/div[2]/div[1]/div/div[2]/div/div/table'
+table_list <- 
+  page %>%
+  read_html() %>%
+  html_nodes(xpath = xpath) %>%
+  html_table(fill = TRUE)
+Suicide <- table_list[[1]]
+
+Happiness <- read.csv("2017_Happiness.csv")
+
+Happy_Suicide <- 
+  Happiness %>%
+  left_join(Suicide, by = c("Country" = "X1"))
+```
+
+
+## Data Wrangling
+
+```{r}
+# clean data
+Happy_Suicide_Clean <-
+  Happy_Suicide %>%
+  rename(country = Country,
+         happiness_rank = Happiness.Rank,
+         happiness_score = Happiness.Score,
+         maximum_happiness = Whisker.high,
+         minimum_happiness = Whisker.low,
+         GDP_per_capita = Economy..GDP.per.Capita.,
+         family = Family,
+         life_expectancy = Health..Life.Expectancy.,
+         freedom = Freedom,
+         generosity = Generosity,
+         corruption = Trust..Government.Corruption.,
+         suicides = X2,
+         suicide_rank = X3)
+
+Happy_Suicide_Clean[12] <- NULL
+
+Happy_Suicide_Clean
+```
