@@ -32,6 +32,20 @@ Happiness <- read.csv("2017_Happiness.csv")
 Happy_Suicide <- 
   Happiness %>%
   left_join(Suicide, by = c("Country" = "X1"))
+
+# user - defined functions
+fitted_model <- function(a, data) {
+  # fits a linear model based on provided estimates
+
+  a[1] + data$GDP_per_capita * a[2]
+}
+
+resid_measurement <- function(mod, data) {
+  # computes the residuals of a linear model based on provided estimates
+  
+  diff <- data$happiness_score - fitted_model(mod, data)
+  sqrt(mean(diff ^ 2))
+}
 ```
 
 
@@ -63,6 +77,61 @@ Happy_Suicide_Clean
 ```
 
 ```{r}
+# find best coefficient estimates
+nrBest <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
+nrBest$par
+```
+
+```{r}
+# create optimal linear model
+Happy_Suicide_Clean %>%
+  ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
+  geom_abline(intercept = 3.203957, slope = 2.183670, color = "dark red", 
+                 linetype = "solid", size = .5) +
+  geom_point(color = "dark blue") +
+  xlab("GDP Per Capita") +
+  ylab("Happiness Score") +
+  ggtitle("Predicting Happiness Score from GDP Per Capita") +
+  annotate("text", x = .4, y = 7, label = "y = 2.183670x + 3.203957", size = 7, color = "dark green") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
+```
+
+```{r}
+# create optimal residual plot
+mod_values <- 3.203957 + (2.183670 * Happy_Suicide_Clean$GDP_per_capita)
+
+Happy_Dist <-
+  Happy_Suicide_Clean %>%
+  select(country, happiness_score) %>%
+  mutate(model_values = mod_values,
+         residuals = happiness_score - model_values)
+
+Happy_Dist %>%
+  ggplot(aes(x = model_values, y = residuals)) +
+  geom_point(color = 'dark blue') +
+  geom_hline(yintercept = 0, color = 'dark red') +
+  xlab("Fitted Values") +
+  ylab("Residuals") +
+  ggtitle("Residual Plot") +
+  annotate("text", x = 6.65, y = 1.75, label = "RMS Error = 0.66", size = 7.5, color = "dark green") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
+```
+
+```{r}
+# calculate RMS error
+sqrt(mean(Happy_Dist$residuals ^ 2))
+```
+
+
+```{r}
 # dendogram of countries
 Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
 
@@ -72,7 +141,6 @@ Happy_Suicide_Clean_2 <-
   arrange(happiness_rank) %>%
   head(25)
   
-
 Happy_std <-
   scale(Happy_Suicide_Clean_2) %>%
   as.data.frame()
@@ -95,59 +163,6 @@ Happy_dendo %>%
   plot(cex = 0.9, labels = labels, lwd = 2,
        main = "Top 25 Happiest Countries Dendogram")
 ```
-
-```{r}
-# create linear model
-Happy_Suicide_Clean %>%
-  ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
-  geom_smooth(method = "lm", se = FALSE, color = "dark red") +
-  geom_point(color = "dark blue") +
-  xlab("GDP Per Capita") +
-  ylab("Happiness Score") +
-  ggtitle("Predicting Happiness Score from GDP Per Capita") +
-  annotate("text", x = .4, y = 7, label = "y = 2.1842x + 3.2032", size = 7.5, color = "dark red") +
-  theme(plot.background = element_rect(fill = 'grey'),
-        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, family = "", face = "bold"),
-        panel.background = element_rect(fill = 'grey'),
-        panel.grid.major = element_line(color = "white"),
-        panel.grid.minor = element_line(color = "grey"))
-```
-
-```{r}
-# summary of the linear model
-Mod1 <- lm(happiness_score ~ GDP_per_capita, data = Happy_Suicide_Clean)
-msummary(Mod1)
-```
-
-```{r}
-# show the residuals
-mod_values <- 3.2032 + (2.1842 * Happy_Suicide_Clean$GDP_per_capita)
-
-Happy_Dist <-
-  Happy_Suicide_Clean %>%
-  select(country, happiness_score) %>%
-  mutate(model_values = mod_values,
-         residuals = happiness_score - model_values)
-
-Happy_Dist %>%
-  ggplot(aes(x = model_values, y = residuals)) +
-  geom_point(color = 'dark blue') +
-  geom_hline(yintercept = 0, color = 'dark red') +
-  xlab("Fitted Values") +
-  ylab("Residuals") +
-  ggtitle("Residual Plot") +
-  annotate("text", x = 6.5, y = 2, label = "RMS Error = 0.66", size = 7.5, color = "dark red") +
-  theme(plot.background = element_rect(fill = 'grey'),
-        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "", face = "bold"),
-        panel.background = element_rect(fill = 'grey'),
-        panel.grid.major = element_line(color = "white"),
-        panel.grid.minor = element_line(color = "grey"))
-
-sqrt(mean(Happy_Dist$residuals ^ 2))
-```
-
-
-
 
 
 
