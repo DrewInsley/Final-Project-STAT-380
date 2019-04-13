@@ -1,5 +1,7 @@
 ---
 title: "Final Project"
+authors: "Kim Mincin $ Drew Insley"
+due date: "April 30, 2019"
 output: html_notebook
 ---
 
@@ -13,6 +15,7 @@ rm(list = ls())
 library(mdsr)
 library(rvest)
 library(readr)
+library(tidyr)
 
 # read data
 page <- "http://worldpopulationreview.com/countries/suicide-rate-by-country/"
@@ -32,7 +35,7 @@ Happy_Suicide <-
 ```
 
 
-## Data Wrangling
+## Project
 
 ```{r}
 # clean data
@@ -59,9 +62,8 @@ Happy_Suicide_Clean[12] <- NULL
 Happy_Suicide_Clean
 ```
 
-
 ```{r}
-# calculate distance
+# dendogram of countries
 Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
 
 Happy_Suicide_Clean_2 <-
@@ -82,11 +84,6 @@ Happy_dendo <-
   Happy_dist %>%
   hclust(method = "complete")
 
-print(Happy_dendo)
-```
-
-```{r}
-# dendogram of countries
 Happy_Suicide_Clean_Top_25 <- 
   Happy_Suicide_Clean %>%
   arrange(happiness_rank) %>%
@@ -99,22 +96,22 @@ Happy_dendo %>%
        main = "Top 25 Happiest Countries Dendogram")
 ```
 
-
 ```{r}
 # create linear model
 Happy_Suicide_Clean %>%
   ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_point(color = "dark red") +
-  theme(plot.background = element_rect(fill = 'grey')) +
-  theme(plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "")) +
+  geom_smooth(method = "lm", se = FALSE, color = "dark red") +
+  geom_point(color = "dark blue") +
   xlab("GDP Per Capita") +
   ylab("Happiness Score") +
-  ggtitle("Predicting Happiness Score from GDP Per Capita")
+  ggtitle("Predicting Happiness Score from GDP Per Capita") +
+  annotate("text", x = .4, y = 7, label = "y = 2.1842x + 3.2032", size = 7.5, color = "dark red") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
 ```
-
-
-
 
 ```{r}
 # summary of the linear model
@@ -122,9 +119,8 @@ Mod1 <- lm(happiness_score ~ GDP_per_capita, data = Happy_Suicide_Clean)
 msummary(Mod1)
 ```
 
-
-
 ```{r}
+# show the residuals
 mod_values <- 3.2032 + (2.1842 * Happy_Suicide_Clean$GDP_per_capita)
 
 Happy_Dist <-
@@ -137,15 +133,18 @@ Happy_Dist %>%
   ggplot(aes(x = model_values, y = residuals)) +
   geom_point(color = 'dark blue') +
   geom_hline(yintercept = 0, color = 'dark red') +
-  theme(plot.background = element_rect(fill = 'grey')) +
-  theme(plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "")) +
   xlab("Fitted Values") +
   ylab("Residuals") +
-  ggtitle("Residual Plot")
+  ggtitle("Residual Plot") +
+  annotate("text", x = 6.5, y = 2, label = "RMS Error = 0.66", size = 7.5, color = "dark red") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
 
 sqrt(mean(Happy_Dist$residuals ^ 2))
 ```
-
 
 
 
