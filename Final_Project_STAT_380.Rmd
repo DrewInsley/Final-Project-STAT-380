@@ -12,6 +12,7 @@ rm(list = ls())
 # download packages
 library(mdsr)
 library(rvest)
+library(readr)
 
 # read data
 page <- "http://worldpopulationreview.com/countries/suicide-rate-by-country/"
@@ -49,9 +50,111 @@ Happy_Suicide_Clean <-
          generosity = Generosity,
          corruption = Trust..Government.Corruption.,
          suicides = X2,
-         suicide_rank = X3)
+         suicide_rank = X3) %>%
+  mutate(suicides = as.numeric(gsub("suicides per 100k", " ", suicides)),
+         suicide_rank = as.numeric(suicide_rank))
 
 Happy_Suicide_Clean[12] <- NULL
 
 Happy_Suicide_Clean
 ```
+
+
+```{r}
+# calculate distance
+Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
+
+Happy_Suicide_Clean_2 <-
+  Happy_Suicide_Clean_2 %>%
+  select(happiness_rank, GDP_per_capita, life_expectancy, generosity, freedom) %>%
+  arrange(happiness_rank) %>%
+  head(25)
+  
+
+Happy_std <-
+  scale(Happy_Suicide_Clean_2) %>%
+  as.data.frame()
+
+Happy_dist <- 
+  dist(Happy_std)
+
+Happy_dendo <-
+  Happy_dist %>%
+  hclust(method = "complete")
+
+print(Happy_dendo)
+```
+
+```{r}
+# dendogram of countries
+Happy_Suicide_Clean_Top_25 <- 
+  Happy_Suicide_Clean %>%
+  arrange(happiness_rank) %>%
+  head(25)
+
+labels <- Happy_Suicide_Clean_Top_25$country
+
+Happy_dendo %>%
+  plot(cex = 0.9, labels = labels, lwd = 2,
+       main = "Top 25 Happiest Countries Dendogram")
+```
+
+
+```{r}
+# create linear model
+Happy_Suicide_Clean %>%
+  ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_point(color = "dark red") +
+  theme(plot.background = element_rect(fill = 'grey')) +
+  theme(plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "")) +
+  xlab("GDP Per Capita") +
+  ylab("Happiness Score") +
+  ggtitle("Predicting Happiness Score from GDP Per Capita")
+```
+
+
+
+
+```{r}
+# summary of the linear model
+Mod1 <- lm(happiness_score ~ GDP_per_capita, data = Happy_Suicide_Clean)
+msummary(Mod1)
+```
+
+
+
+```{r}
+mod_values <- 3.2032 + (2.1842 * Happy_Suicide_Clean$GDP_per_capita)
+
+Happy_Dist <-
+  Happy_Suicide_Clean %>%
+  select(country, happiness_score) %>%
+  mutate(model_values = mod_values,
+         residuals = happiness_score - model_values)
+
+Happy_Dist %>%
+  ggplot(aes(x = model_values, y = residuals)) +
+  geom_point(color = 'dark blue') +
+  geom_hline(yintercept = 0, color = 'dark red') +
+  theme(plot.background = element_rect(fill = 'grey')) +
+  theme(plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "")) +
+  xlab("Fitted Values") +
+  ylab("Residuals") +
+  ggtitle("Residual Plot")
+
+sqrt(mean(Happy_Dist$residuals ^ 2))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
