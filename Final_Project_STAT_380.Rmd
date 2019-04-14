@@ -1,6 +1,6 @@
 ---
 title: "Final Project"
-authors: "Kim Mincin $ Drew Insley"
+authors: "Kim Mincin & Drew Insley"
 due date: "April 30, 2019"
 output: html_notebook
 ---
