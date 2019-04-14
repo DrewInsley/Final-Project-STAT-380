@@ -92,7 +92,13 @@ Happy_Suicide_Clean_Bottom_25 <-
 Happy_Suicide_Clean_Top_25 %>%
   ggplot(aes(x = GDP_per_capita)) +
   geom_density(fill = "dark red", alpha = .3) +
-  geom_density(aes(x = GDP_per_capita), data = Happy_Suicide_Clean_Bottom_25, fill = "dark blue", alpha = .3)
+  geom_density(aes(x = GDP_per_capita), data = Happy_Suicide_Clean_Bottom_25, fill = "dark blue", alpha = .3) +
+  ggtitle("Density Plots of Top/Bottom 25 Countries GDP Per Capita") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
 ```
 
 We began by showing a density plot for GDP_per_capita for the top and bottom 25 happiest countries.
@@ -224,6 +230,9 @@ Happy_Places %>%
 
 To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
 
+```{r}
+apply(X = Happy_Suicide_Clean[, -c(1, 2, 12, 13)], MARGIN = 2, FUN = mean)
+```
 
 
 
