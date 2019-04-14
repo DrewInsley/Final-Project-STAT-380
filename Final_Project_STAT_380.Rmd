@@ -16,6 +16,8 @@ library(mdsr)
 library(rvest)
 library(readr)
 library(tidyr)
+library(rgeos)
+library(rworldmap)
 
 # read data
 page <- "http://worldpopulationreview.com/countries/suicide-rate-by-country/"
@@ -41,7 +43,7 @@ fitted_model <- function(a, data) {
 }
 
 resid_measurement <- function(mod, data) {
-  # computes the residuals of a linear model based on provided estimates
+  # computes the root mean squared of a linear model based on provided estimates
   
   diff <- data$happiness_score - fitted_model(mod, data)
   sqrt(mean(diff ^ 2))
@@ -78,8 +80,8 @@ Happy_Suicide_Clean
 
 ```{r}
 # find best coefficient estimates
-nrBest <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
-nrBest$par
+Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
+Happy_Best$par
 ```
 
 ```{r}
@@ -132,7 +134,7 @@ sqrt(mean(Happy_Dist$residuals ^ 2))
 
 
 ```{r}
-# dendogram of countries
+# dendogram of top 25 happiest countries
 Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
 
 Happy_Suicide_Clean_2 <-
@@ -164,6 +166,43 @@ Happy_dendo %>%
        main = "Top 25 Happiest Countries Dendogram")
 ```
 
+```{r}
+# show happiness levels on a map
+map <- getMap(resolution = "low")
+coordinates <- gCentroid(map, byid = TRUE)
+Lat_Long <- 
+  coordinates %>%
+  as.data.frame()
+
+Lat_Long_Clean <-
+  setNames(cbind(rownames(Lat_Long), Lat_Long, row.names = NULL), 
+         c("country", "latitude", "longitude"))
+
+Happy_Places <-
+  Happy_Suicide_Clean %>%
+  left_join(Lat_Long_Clean) %>%
+  select(country, latitude, longitude, happiness_score) %>%
+  filter(latitude != "NA") %>%
+  mutate(happiness_score = ifelse(happiness_score >= mean(happiness_score), "Top 50%", "Bottom 50%"))
+
+Happy_Places %>%
+  ggplot(aes(x = latitude, y = longitude)) +
+  geom_point(aes(color = happiness_score), size = 3) +
+  geom_point(aes(x = -75, y = 40), color = "cyan3", size = 3) + 
+  annotate("text", x = -75, y = 45, label = "United States", size = 4, color = "white")  +
+  geom_hline(yintercept = 0, color = 'dark red', linetype = 'dotted') +
+  geom_vline(xintercept = 0, color = 'dark red', linetype = "dotted") +
+  xlab("Latitude") +
+  ylab("Longitude") +
+  ggtitle("Happiness on the Map") +
+  theme(plot.background = element_rect(fill = 'deepskyblue3', color = "deepskyblue3"),
+        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'deepskyblue3'),
+        panel.grid.major = element_line(color = "deepskyblue3"),
+        panel.grid.minor = element_line(color = "deepskyblue3"),
+        legend.background = element_rect(fill = "deepskyblue3"),
+        legend.key = element_rect(fill = "deepskyblue3", color = NA))
+```
 
 
 
