@@ -1,5 +1,7 @@
 ---
 title: "Final Project"
+authors: "Kim Mincin $ Drew Insley"
+due date: "April 30, 2019"
 output: html_notebook
 ---
 
@@ -12,6 +14,10 @@ rm(list = ls())
 # download packages
 library(mdsr)
 library(rvest)
+library(readr)
+library(tidyr)
+library(rgeos)
+library(rworldmap)
 
 # read data
 page <- "http://worldpopulationreview.com/countries/suicide-rate-by-country/"
@@ -28,10 +34,24 @@ Happiness <- read.csv("2017_Happiness.csv")
 Happy_Suicide <- 
   Happiness %>%
   left_join(Suicide, by = c("Country" = "X1"))
+
+# user - defined functions
+fitted_model <- function(a, data) {
+  # fits a linear model based on provided estimates
+
+  a[1] + data$GDP_per_capita * a[2]
+}
+
+resid_measurement <- function(mod, data) {
+  # computes the root mean squared of a linear model based on provided estimates
+  
+  diff <- data$happiness_score - fitted_model(mod, data)
+  sqrt(mean(diff ^ 2))
+}
 ```
 
 
-## Data Wrangling
+## Project
 
 ```{r}
 # clean data
@@ -49,9 +69,149 @@ Happy_Suicide_Clean <-
          generosity = Generosity,
          corruption = Trust..Government.Corruption.,
          suicides = X2,
-         suicide_rank = X3)
+         suicide_rank = X3) %>%
+  mutate(suicides = as.numeric(gsub("suicides per 100k", " ", suicides)),
+         suicide_rank = as.numeric(suicide_rank))
 
 Happy_Suicide_Clean[12] <- NULL
 
 Happy_Suicide_Clean
 ```
+
+```{r}
+# find best coefficient estimates
+Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
+Happy_Best$par
+```
+We started by finding the optim parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.
+
+```{r}
+# create optimal linear model
+Happy_Suicide_Clean %>%
+  ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
+  geom_abline(intercept = 3.203957, slope = 2.183670, color = "dark red", 
+                 linetype = "solid", size = .5) +
+  geom_point(color = "dark blue") +
+  xlab("GDP Per Capita") +
+  ylab("Happiness Score") +
+  ggtitle("Predicting Happiness Score from GDP Per Capita") +
+  annotate("text", x = .4, y = 7, label = "y = 2.183670x + 3.203957", size = 7, color = "dark green") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
+```
+This graph showcases the results of our optim function for happiness score.
+
+```{r}
+# create optimal residual plot
+mod_values <- 3.203957 + (2.183670 * Happy_Suicide_Clean$GDP_per_capita)
+
+Happy_Dist <-
+  Happy_Suicide_Clean %>%
+  select(country, happiness_score) %>%
+  mutate(model_values = mod_values,
+         residuals = happiness_score - model_values)
+
+Happy_Dist %>%
+  ggplot(aes(x = model_values, y = residuals)) +
+  geom_point(color = 'dark blue') +
+  geom_hline(yintercept = 0, color = 'dark red') +
+  xlab("Fitted Values") +
+  ylab("Residuals") +
+  ggtitle("Residual Plot") +
+  annotate("text", x = 6.65, y = 1.75, label = "RMS Error = 0.66", size = 7.5, color = "dark green") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
+```
+There is no distinct pattern among the model so the residual plot shows that the linear model is a good fit for our data.
+
+```{r}
+# calculate RMS error
+sqrt(mean(Happy_Dist$residuals ^ 2))
+```
+The root mean squared error for the optimal line is .657.
+
+```{r}
+# dendogram of top 25 happiest countries
+Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
+
+Happy_Suicide_Clean_2 <-
+  Happy_Suicide_Clean_2 %>%
+  select(happiness_rank, GDP_per_capita, life_expectancy, generosity, freedom) %>%
+  arrange(happiness_rank) %>%
+  head(25)
+  
+Happy_std <-
+  scale(Happy_Suicide_Clean_2) %>%
+  as.data.frame()
+
+Happy_dist <- 
+  dist(Happy_std)
+
+Happy_dendo <-
+  Happy_dist %>%
+  hclust(method = "complete")
+
+Happy_Suicide_Clean_Top_25 <- 
+  Happy_Suicide_Clean %>%
+  arrange(happiness_rank) %>%
+  head(25)
+
+labels <- Happy_Suicide_Clean_Top_25$country
+
+Happy_dendo %>%
+  plot(cex = 0.9, labels = labels, lwd = 2,
+       main = "Top 25 Happiest Countries Dendogram")
+```
+The dendogram shows the dissimularity among the top 25 happiest countries. Interestingly the countries are grouped together by region. 
+
+```{r}
+# show happiness levels on a map
+map <- getMap(resolution = "low")
+coordinates <- gCentroid(map, byid = TRUE)
+Lat_Long <- 
+  coordinates %>%
+  as.data.frame()
+
+Lat_Long_Clean <-
+  setNames(cbind(rownames(Lat_Long), Lat_Long, row.names = NULL), 
+         c("country", "latitude", "longitude"))
+
+Happy_Places <-
+  Happy_Suicide_Clean %>%
+  left_join(Lat_Long_Clean) %>%
+  select(country, latitude, longitude, happiness_score) %>%
+  filter(latitude != "NA") %>%
+  mutate(happiness_score = ifelse(happiness_score >= mean(happiness_score), "Top 50%", "Bottom 50%"))
+
+Happy_Places %>%
+  ggplot(aes(x = latitude, y = longitude)) +
+  geom_point(aes(color = happiness_score), size = 3) +
+  geom_point(aes(x = -75, y = 40), color = "cyan3", size = 3) + 
+  annotate("text", x = -75, y = 45, label = "United States", size = 4, color = "white")  +
+  geom_hline(yintercept = 0, color = 'dark red', linetype = 'dotted') +
+  geom_vline(xintercept = 0, color = 'dark red', linetype = "dotted") +
+  xlab("Latitude") +
+  ylab("Longitude") +
+  ggtitle("Happiness on the Map") +
+  theme(plot.background = element_rect(fill = 'deepskyblue3', color = "deepskyblue3"),
+        plot.title = element_text(size = 20, lineheight = .8, vjust = 1, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'deepskyblue3'),
+        panel.grid.major = element_line(color = "deepskyblue3"),
+        panel.grid.minor = element_line(color = "deepskyblue3"),
+        legend.background = element_rect(fill = "deepskyblue3"),
+        legend.key = element_rect(fill = "deepskyblue3", color = NA))
+```
+
+To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
+
+
+
+
+
+
