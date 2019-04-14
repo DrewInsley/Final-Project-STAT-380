@@ -79,6 +79,25 @@ Happy_Suicide_Clean
 ```
 
 ```{r}
+Happy_Suicide_Clean_Top_25 <- 
+  Happy_Suicide_Clean %>%
+  arrange(happiness_rank) %>%
+  head(25)
+
+Happy_Suicide_Clean_Bottom_25 <-
+  Happy_Suicide_Clean %>%
+  arrange(desc(happiness_rank)) %>%
+  head(25)
+
+Happy_Suicide_Clean_Top_25 %>%
+  ggplot(aes(x = GDP_per_capita)) +
+  geom_density(fill = "dark red", alpha = .3) +
+  geom_density(aes(x = GDP_per_capita), data = Happy_Suicide_Clean_Bottom_25, fill = "dark blue", alpha = .3)
+```
+
+We began by showing a density plot for GDP_per_capita for the top and bottom 25 happiest countries.
+
+```{r}
 # find best coefficient estimates
 Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
 Happy_Best$par
@@ -157,11 +176,6 @@ Happy_dendo <-
   Happy_dist %>%
   hclust(method = "complete")
 
-Happy_Suicide_Clean_Top_25 <- 
-  Happy_Suicide_Clean %>%
-  arrange(happiness_rank) %>%
-  head(25)
-
 labels <- Happy_Suicide_Clean_Top_25$country
 
 Happy_dendo %>%
@@ -208,14 +222,11 @@ Happy_Places %>%
         legend.key = element_rect(fill = "deepskyblue3", color = NA))
 ```
 
-<<<<<<< HEAD
 To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
-=======
-```{r}
 
-```
 
->>>>>>> ec4769a059ccdf96a3799b394c18c733deaac7e2
+
+
 
 
 
