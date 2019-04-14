@@ -208,7 +208,14 @@ Happy_Places %>%
         legend.key = element_rect(fill = "deepskyblue3", color = NA))
 ```
 
+<<<<<<< HEAD
 To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
+=======
+```{r}
+
+```
+
+>>>>>>> ec4769a059ccdf96a3799b394c18c733deaac7e2
 
 
 
