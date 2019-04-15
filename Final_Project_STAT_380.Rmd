@@ -79,6 +79,7 @@ Happy_Suicide_Clean
 ```
 
 ```{r}
+# create density plots
 Happy_Suicide_Clean_Top_25 <- 
   Happy_Suicide_Clean %>%
   arrange(happiness_rank) %>%
@@ -162,6 +163,26 @@ sqrt(mean(Happy_Dist$residuals ^ 2))
 The root mean squared error for the optimal line is .657.
 
 ```{r}
+Happy_Min <-
+  Happy_Suicide_Clean_Top_25 %>%
+  select(country, minimum_happiness) %>%
+  spread(key = country, value = minimum_happiness)
+
+Happy_Max <- 
+  Happy_Suicide_Clean_Top_25 %>%
+  select(country, maximum_happiness) %>%
+  spread(key = country, value = maximum_happiness)
+
+Happy_Mix_Max <-
+  Happy_Min %>%
+  rbind(Happy_Max)
+
+apply(X = Happy_Mix_Max, FUN = mean, MARGIN = 2)
+```
+
+We looked at a measurement for the average happiness for the top 25 happiest countries, and began to notice that countries in the same region has similar levels of happiness. To further explore this, we decided to create a dendogram to examine the similarities between countries.
+
+```{r}
 # dendogram of top 25 happiest countries
 Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
 
@@ -229,16 +250,3 @@ Happy_Places %>%
 ```
 
 To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
-
-```{r}
-apply(X = Happy_Suicide_Clean[, -c(1, 2, 12, 13)], MARGIN = 2, FUN = mean)
-```
-
-
-
-
-
-
-
-
-
