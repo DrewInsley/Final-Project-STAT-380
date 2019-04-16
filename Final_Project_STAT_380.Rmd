@@ -29,10 +29,10 @@ table_list <-
   html_table(fill = TRUE)
 Suicide <- table_list[[1]]
 
-Happiness <- read.csv("2017_Happiness.csv")
+Happiness_Raw <- read.csv("2017_Happiness.csv")
 
 Happy_Suicide <- 
-  Happiness %>%
+  Happiness_Raw %>%
   left_join(Suicide, by = c("Country" = "X1"))
 
 # user - defined functions
@@ -50,13 +50,15 @@ resid_measurement <- function(mod, data) {
 }
 ```
 
+## Introduction
+To utilize our data science skills for social good we choose to investigate happiness levels across the world. Our first data set, The World Happiness Report (2017_Happiness.csv), scores each countries happiness using data from the Gallup World Poll. The data set was released at a UN event celebrating International Day of Happiness. The other variables included in the data set can be used as predictors for happiness. These predictors once understood could be used to influence public policy and assess countries progress. Our second data set provided the latitude and longitude of each country so that happiness could be evaluated on a regional basis as well as locally. The goal of our project was to determine what factors have the greatest influence on a countries happiness so that leaders can better target how to improve the well being of it’s citizens.
 
 ## Project
 
 ```{r}
 # clean data
-Happy_Suicide_Clean <-
-  Happy_Suicide %>%
+Happiness <-
+  Happiness_Raw %>%
   rename(country = Country,
          happiness_rank = Happiness.Rank,
          happiness_score = Happiness.Score,
@@ -67,33 +69,27 @@ Happy_Suicide_Clean <-
          life_expectancy = Health..Life.Expectancy.,
          freedom = Freedom,
          generosity = Generosity,
-         corruption = Trust..Government.Corruption.,
-         suicides = X2,
-         suicide_rank = X3) %>%
-  mutate(suicides = as.numeric(gsub("suicides per 100k", " ", suicides)),
-         suicide_rank = as.numeric(suicide_rank))
+         corruption = Trust..Government.Corruption.)
 
-Happy_Suicide_Clean[12] <- NULL
-
-Happy_Suicide_Clean
+Happiness
 ```
 
 ```{r}
 # create density plots
-Happy_Suicide_Clean_Top_25 <- 
-  Happy_Suicide_Clean %>%
+Happiness_Top_25 <- 
+  Happiness %>%
   arrange(happiness_rank) %>%
   head(25)
 
-Happy_Suicide_Clean_Bottom_25 <-
-  Happy_Suicide_Clean %>%
+Happiness_Bottom_25 <-
+  Happiness %>%
   arrange(desc(happiness_rank)) %>%
   head(25)
 
-Happy_Suicide_Clean_Top_25 %>%
+Happiness_Top_25 %>%
   ggplot(aes(x = GDP_per_capita)) +
   geom_density(fill = "dark red", alpha = .3) +
-  geom_density(aes(x = GDP_per_capita), data = Happy_Suicide_Clean_Bottom_25, fill = "dark blue", alpha = .3) +
+  geom_density(aes(x = GDP_per_capita), data = Happiness_Bottom_25, fill = "dark blue", alpha = .3) +
   ggtitle("Density Plots of Top/Bottom 25 Countries GDP Per Capita") +
   theme(plot.background = element_rect(fill = 'grey'),
         plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
@@ -102,18 +98,18 @@ Happy_Suicide_Clean_Top_25 %>%
         panel.grid.minor = element_line(color = "grey"))
 ```
 
-We began by showing a density plot for GDP_per_capita for the top and bottom 25 happiest countries.
+The first thing we looked at was the density of GDP_per_capita for the top and bottom 25 happiest countries.
 
 ```{r}
 # find best coefficient estimates
-Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happy_Suicide_Clean)
+Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happiness)
 Happy_Best$par
 ```
-We started by finding the optim parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.
+We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.
 
 ```{r}
 # create optimal linear model
-Happy_Suicide_Clean %>%
+Happiness %>%
   ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
   geom_abline(intercept = 3.203957, slope = 2.183670, color = "dark red", 
                  linetype = "solid", size = .5) +
@@ -128,14 +124,14 @@ Happy_Suicide_Clean %>%
         panel.grid.major = element_line(color = "white"),
         panel.grid.minor = element_line(color = "grey"))
 ```
-This graph showcases the results of our optim function for happiness score.
+This graph showcases the results of our optimal function for happiness score.
 
 ```{r}
 # create optimal residual plot
-mod_values <- 3.203957 + (2.183670 * Happy_Suicide_Clean$GDP_per_capita)
+mod_values <- 3.203957 + (2.183670 * Happiness$GDP_per_capita)
 
 Happy_Dist <-
-  Happy_Suicide_Clean %>%
+  Happiness %>%
   select(country, happiness_score) %>%
   mutate(model_values = mod_values,
          residuals = happiness_score - model_values)
@@ -164,12 +160,12 @@ The root mean squared error for the optimal line is .657.
 
 ```{r}
 Happy_Min <-
-  Happy_Suicide_Clean_Top_25 %>%
+  Happiness_Top_25 %>%
   select(country, minimum_happiness) %>%
   spread(key = country, value = minimum_happiness)
 
 Happy_Max <- 
-  Happy_Suicide_Clean_Top_25 %>%
+  Happiness_Top_25 %>%
   select(country, maximum_happiness) %>%
   spread(key = country, value = maximum_happiness)
 
@@ -184,16 +180,16 @@ We looked at a measurement for the average happiness for the top 25 happiest cou
 
 ```{r}
 # dendogram of top 25 happiest countries
-Happy_Suicide_Clean_2 <- Happy_Suicide_Clean[-c(1)]
+Happiness_2 <- Happiness[-c(1)]
 
-Happy_Suicide_Clean_2 <-
-  Happy_Suicide_Clean_2 %>%
+Happiness_2 <-
+  Happiness_2 %>%
   select(happiness_rank, GDP_per_capita, life_expectancy, generosity, freedom) %>%
   arrange(happiness_rank) %>%
   head(25)
   
 Happy_std <-
-  scale(Happy_Suicide_Clean_2) %>%
+  scale(Happiness_2) %>%
   as.data.frame()
 
 Happy_dist <- 
@@ -203,13 +199,13 @@ Happy_dendo <-
   Happy_dist %>%
   hclust(method = "complete")
 
-labels <- Happy_Suicide_Clean_Top_25$country
+labels <- Happiness_Top_25$country
 
 Happy_dendo %>%
   plot(cex = 0.9, labels = labels, lwd = 2,
        main = "Top 25 Happiest Countries Dendogram")
 ```
-The dendogram shows the dissimularity among the top 25 happiest countries. Interestingly the countries are grouped together by region. 
+The dendogram shows the dissimilarity among the top 25 happiest countries. The dendogram confirms that countries in the same region have low levels of dissimilarity.
 
 ```{r}
 # show happiness levels on a map
@@ -224,7 +220,7 @@ Lat_Long_Clean <-
          c("country", "latitude", "longitude"))
 
 Happy_Places <-
-  Happy_Suicide_Clean %>%
+  Happiness %>%
   left_join(Lat_Long_Clean) %>%
   select(country, latitude, longitude, happiness_score) %>%
   filter(latitude != "NA") %>%
