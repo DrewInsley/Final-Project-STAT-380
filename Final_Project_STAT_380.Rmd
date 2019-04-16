@@ -35,6 +35,16 @@ Happy_Suicide <-
   Happiness_Raw %>%
   left_join(Suicide, by = c("Country" = "X1"))
 
+map <- getMap(resolution = "low")
+coordinates <- gCentroid(map, byid = TRUE)
+Lat_Long <- 
+  coordinates %>%
+  as.data.frame()
+
+Lat_Long_Clean <-
+  setNames(cbind(rownames(Lat_Long), Lat_Long, row.names = NULL), 
+         c("country", "latitude", "longitude"))
+
 # user - defined functions
 fitted_model <- function(a, data) {
   # fits a linear model based on provided estimates
@@ -51,6 +61,7 @@ resid_measurement <- function(mod, data) {
 ```
 
 ## Introduction
+
 To utilize our data science skills for social good we choose to investigate happiness levels across the world. Our first data set, The World Happiness Report (2017_Happiness.csv), scores each countries happiness using data from the Gallup World Poll. The data set was released at a UN event celebrating International Day of Happiness. The other variables included in the data set can be used as predictors for happiness. These predictors once understood could be used to influence public policy and assess countries progress. Our second data set provided the latitude and longitude of each country so that happiness could be evaluated on a regional basis as well as locally. The goal of our project was to determine what factors have the greatest influence on a countries happiness so that leaders can better target how to improve the well being of it’s citizens.
 
 ## Project
@@ -209,16 +220,6 @@ The dendogram shows the dissimilarity among the top 25 happiest countries. The d
 
 ```{r}
 # show happiness levels on a map
-map <- getMap(resolution = "low")
-coordinates <- gCentroid(map, byid = TRUE)
-Lat_Long <- 
-  coordinates %>%
-  as.data.frame()
-
-Lat_Long_Clean <-
-  setNames(cbind(rownames(Lat_Long), Lat_Long, row.names = NULL), 
-         c("country", "latitude", "longitude"))
-
 Happy_Places <-
   Happiness %>%
   left_join(Lat_Long_Clean) %>%
