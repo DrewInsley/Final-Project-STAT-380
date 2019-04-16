@@ -50,6 +50,8 @@ resid_measurement <- function(mod, data) {
 }
 ```
 
+## Intro
+To utilize our data science skills for social good we choose to investigate happiness levels across the world. Our first data set, The World Happiness Report (2017_Happiness.csv), scores each countries happiness using data from the Gallup World Poll. The dataset was released at a UN event celebrating International Day of Happiness. The other variables included in the data set can be used as predictors for happiness. These predictors once understood could be used to influence public policy and assess countries progress. Our second data set provided the latitude and longitude of each country so that happiness could be evaluated on a regional basis as well as locally. The goal of our project was to determine what factors have the greatest influence on a countries happiness so that leaders can better target how to improve the well being of it’s citizens.
 
 ## Project
 
