@@ -5,8 +5,6 @@ due date: "April 30, 2019"
 output:
   html_notebook:
     theme: journal
-  html_document:
-    df_print: paged
 ---
 
 ## Front Matter
