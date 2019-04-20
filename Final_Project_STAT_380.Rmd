@@ -2,7 +2,11 @@
 title: "Final Project"
 authors: "Kim Mincin & Drew Insley"
 due date: "April 30, 2019"
-output: html_notebook
+output:
+  html_notebook:
+    theme: journal
+  html_document:
+    df_print: paged
 ---
 
 ## Front Matter
@@ -62,7 +66,7 @@ resid_measurement <- function(mod, data) {
 
 ## Introduction
 
-To utilize our data science skills for social good we choose to investigate happiness levels across the world. Our first data set, The World Happiness Report (2017_Happiness.csv), scores each countries happiness using data from the Gallup World Poll. The data set was released at a UN event celebrating International Day of Happiness. The other variables included in the data set can be used as predictors for happiness. These predictors once understood could be used to influence public policy and assess countries progress. Our second data set provided the latitude and longitude of each country so that happiness could be evaluated on a regional basis as well as locally. The goal of our project was to determine what factors have the greatest influence on a countries happiness so that leaders can better target how to improve the well being of it’s citizens.
+**To utilize our data science skills for social good we choose to investigate happiness levels across the world. Our first data set, The World Happiness Report (2017_Happiness.csv), scores each countries happiness using data from the Gallup World Poll. The data set was released at a UN event celebrating International Day of Happiness. The other variables included in the data set can be used as predictors for happiness. These predictors once understood could be used to influence public policy and assess countries progress. Our second data set provided the latitude and longitude of each country so that happiness could be evaluated on a regional basis as well as locally. The goal of our project was to determine what factors have the greatest influence on a countries happiness so that leaders can better target how to improve the well being of it’s citizens.**
 
 ## Project
 
@@ -109,7 +113,7 @@ Happiness_Top_25 %>%
         panel.grid.minor = element_line(color = "grey"))
 ```
 
-The first thing we looked at was the density of GDP_per_capita for the top and bottom 25 happiest countries.
+**The first thing we looked at was the density of GDP_per_capita for the top and bottom 25 happiest countries.**
 
 ```{r}
 # find best coefficient estimates
@@ -117,7 +121,7 @@ Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happiness)
 Happy_Best$par
 ```
 
-We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.
+**We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.**
 
 ```{r}
 # create optimal linear model
@@ -136,7 +140,7 @@ Happiness %>%
         panel.grid.major = element_line(color = "white"),
         panel.grid.minor = element_line(color = "grey"))
 ```
-This graph showcases the plot of our best linear model for happiness score.
+**This graph showcases the plot of our best linear model for happiness score.**
 
 ```{r}
 # create optimal residual plot
@@ -163,14 +167,14 @@ Happy_Dist %>%
         panel.grid.minor = element_line(color = "grey"))
 ```
 
-There is no distinct pattern among the model, so this residual plot shows that the linear model is a good fit for our data.
+**There is no distinct pattern among the model, so this residual plot shows that the linear model is a good fit for our data.**
 
 ```{r}
 # calculate RMS error
 sqrt(mean(Happy_Dist$residuals ^ 2))
 ```
 
-The root mean squared error for the optimal line is .657, which is very low.
+**The root mean squared error for the optimal line is .657, which is very low.**
 
 ```{r}
 Happy_Min <-
@@ -190,7 +194,7 @@ Happy_Mix_Max <-
 apply(X = Happy_Mix_Max, FUN = mean, MARGIN = 2)
 ```
 
-We looked at a measurement for the average happiness for the top 25 happiest countries, and began to notice that countries in the same region has similar levels of happiness. To further explore this, we decided to create a dendogram to examine the similarities between countries.
+**We looked at a measurement for the average happiness for the top 25 happiest countries, and began to notice that countries in the same region has similar levels of happiness. To further explore this, we decided to create a dendogram to examine the similarities between countries.**
 
 ```{r}
 # dendogram of top 25 happiest countries
@@ -220,7 +224,7 @@ Happy_dendo %>%
        main = "Top 25 Happiest Countries Dendogram")
 ```
 
-The dendogram shows the dissimilarity among the top 25 happiest countries. The dendogram confirms that countries in the same region have low levels of dissimilarity.
+**The dendogram shows the dissimilarity among the top 25 happiest countries. The dendogram confirms that countries in the same region have low levels of dissimilarity.**
 
 ```{r}
 # show happiness levels on a map
@@ -250,8 +254,8 @@ Happy_Places %>%
         legend.key = element_rect(fill = "deepskyblue3", color = NA))
 ```
 
-To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
+**To show that the split of happiness was related to region we decided to graph the countries location along with happiness score.**
 
 ## Conclusion
 
-From our analysis we were able to make two distinct conclusions. Firstly, from our linear model, it is clear that countries need to maximize their GDP as much as possible in order to increase happiness. To this end, countries that are looking to increase their inhabitants' overall happiness must establish a governmental framework that promotes private consumption, investment, government spending, and the exportation of goods. Secondly, it is clear from the dendogram and the map that the split between happiness/unhappiness is regional, and furthermore, by style of government. Those countries that have well established, central governments like the United States, Great Britain, and France are higher up in the happiness ranking than countries that are constantly in conditions of unrest, or decentralization. From this, it can be recommended that countries in the bottom 50% of the happiness ranking should focus on imitating the govermental systems of those in the top 50%.
+**From our analysis we were able to make two distinct conclusions. Firstly, from our linear model, it is clear that countries need to maximize their GDP as much as possible in order to increase happiness. To this end, countries that are looking to increase their inhabitants' overall happiness must establish a governmental framework that promotes private consumption, investment, government spending, and the exportation of goods. Secondly, it is clear from the dendogram and the map that the split between happiness/unhappiness is regional, and furthermore, by style of government. Those countries that have well established, central governments like the United States, Great Britain, and France are higher up in the happiness ranking than countries that are constantly in conditions of unrest, or decentralization. From this, it can be recommended that countries in the bottom 50% of the happiness ranking should focus on imitating the govermental systems of those in the top 50%.**
