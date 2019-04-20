@@ -116,6 +116,7 @@ The first thing we looked at was the density of GDP_per_capita for the top and b
 Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happiness)
 Happy_Best$par
 ```
+
 We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.
 
 ```{r}
@@ -135,7 +136,7 @@ Happiness %>%
         panel.grid.major = element_line(color = "white"),
         panel.grid.minor = element_line(color = "grey"))
 ```
-This graph showcases the results of our optimal function for happiness score.
+This graph showcases the plot of our best linear model for happiness score.
 
 ```{r}
 # create optimal residual plot
@@ -161,13 +162,15 @@ Happy_Dist %>%
         panel.grid.major = element_line(color = "white"),
         panel.grid.minor = element_line(color = "grey"))
 ```
-There is no distinct pattern among the model so the residual plot shows that the linear model is a good fit for our data.
+
+There is no distinct pattern among the model, so this residual plot shows that the linear model is a good fit for our data.
 
 ```{r}
 # calculate RMS error
 sqrt(mean(Happy_Dist$residuals ^ 2))
 ```
-The root mean squared error for the optimal line is .657.
+
+The root mean squared error for the optimal line is .657, which is very low.
 
 ```{r}
 Happy_Min <-
@@ -216,6 +219,7 @@ Happy_dendo %>%
   plot(cex = 0.9, labels = labels, lwd = 2,
        main = "Top 25 Happiest Countries Dendogram")
 ```
+
 The dendogram shows the dissimilarity among the top 25 happiest countries. The dendogram confirms that countries in the same region have low levels of dissimilarity.
 
 ```{r}
@@ -247,3 +251,7 @@ Happy_Places %>%
 ```
 
 To show that the split of happiness was related to region we decided to graph the countries location along with happiness score. 
+
+## Conclusion
+
+From our analysis we were able to make two distinct conclusions. Firstly, from our linear model, it is clear that countries need to maximize their GDP as much as possible in order to increase happiness. To this end, countries that are looking to increase their inhabitants' overall happiness must establish a governmental framework that promotes private consumption, investment, government spending, and the exportation of goods. Secondly, it is clear from the dendogram and the map that the split between happiness/unhappiness is regional, and furthermore, by style of government. Those countries that have well established, central governments like the United States, Great Britain, and France are higher up in the happiness ranking than countries that are constantly in conditions of unrest, or decentralization. From this, it can be recommended that countries in the bottom 50% of the happiness ranking should focus on imitating the govermental systems of those in the top 50%.
