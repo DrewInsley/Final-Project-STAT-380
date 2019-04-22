@@ -114,6 +114,26 @@ Happiness_Top_25 %>%
 **The first thing we looked at was the density of GDP_per_capita for the top and bottom 25 happiest countries.**
 
 ```{r}
+models <- 
+  tibble(
+  b0 = runif(250, -20, 40),
+  b1 = runif(250, -5, 5)
+  )
+Happiness %>% 
+  ggplot(aes(x = GDP_per_capita, y = happiness_score)) + 
+  geom_abline(aes(intercept = b0, slope = b1), data = models, alpha = 0.25, color = "dark red") + 
+  geom_point(color = "dark blue") +
+  xlab("GDP Per Capita") +
+  ylab("Happiness Score") +
+  ggtitle("Collection of Random Models") +
+  theme(plot.background = element_rect(fill = 'grey'),
+        plot.title = element_text(size = 17.5, lineheight = .8, vjust = 1, hjust = .5, family = "", face = "bold"),
+        panel.background = element_rect(fill = 'grey'),
+        panel.grid.major = element_line(color = "white"),
+        panel.grid.minor = element_line(color = "grey"))
+```
+
+```{r}
 # find best coefficient estimates
 Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happiness)
 Happy_Best$par
