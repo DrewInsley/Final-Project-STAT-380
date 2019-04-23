@@ -120,7 +120,7 @@ Random_Models <-
 
 Happiness %>% 
   ggplot(aes(x = GDP_per_capita, y = happiness_score)) + 
-  geom_abline(aes(intercept = b0, slope = b1), data = Random_Models, alpha = 0.25, color = "dark red") + 
+  geom_abline(aes(intercept = b0, slope = b1), data = Random_Models, alpha = 0.25, color = "dark red", size = .5) + 
   geom_point(color = "dark blue") +
   xlab("GDP Per Capita") +
   ylab("Happiness Score") +
@@ -147,7 +147,7 @@ Happy_Best$par
 Happiness %>%
   ggplot(aes(x = GDP_per_capita, y = happiness_score)) +
   geom_abline(intercept = 3.203957, slope = 2.183670, color = "dark red", 
-                 linetype = "solid", size = .5) +
+              linetype = "solid", size = .5) +
   geom_point(color = "dark blue") +
   xlab("GDP Per Capita") +
   ylab("Happiness Score") +
