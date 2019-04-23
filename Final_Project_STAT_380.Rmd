@@ -114,14 +114,13 @@ Happiness_Top_25 %>%
 **The first thing we looked at was the density of GDP_per_capita for the top and bottom 25 happiest countries.**
 
 ```{r}
-models <- 
-  tibble(
-  b0 = runif(250, -20, 40),
-  b1 = runif(250, -5, 5)
-  )
+Random_Models <- 
+  tibble(b0 = runif(250, -20, 40),
+         b1 = runif(250, -5, 5))
+
 Happiness %>% 
   ggplot(aes(x = GDP_per_capita, y = happiness_score)) + 
-  geom_abline(aes(intercept = b0, slope = b1), data = models, alpha = 0.25, color = "dark red") + 
+  geom_abline(aes(intercept = b0, slope = b1), data = Random_Models, alpha = 0.25, color = "dark red") + 
   geom_point(color = "dark blue") +
   xlab("GDP Per Capita") +
   ylab("Happiness Score") +
@@ -133,13 +132,15 @@ Happiness %>%
         panel.grid.minor = element_line(color = "grey"))
 ```
 
+**We then began a search for the best intercept and slope for a model predicting happiness score for each country based on GDP per capita. We did this simply by generating a bunch of random lines that could serve as predictive models.**
+
 ```{r}
 # find best coefficient estimates
 Happy_Best <- optim(par = c(0, 0), fn = resid_measurement, data = Happiness)
 Happy_Best$par
 ```
 
-**We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita.**
+**We then found the optimal parameters for intercept and slope for a model predicting happiness score for each country based on GDP per capita, in order to have a more exact and less random approach to model fitting.**
 
 ```{r}
 # create optimal linear model
