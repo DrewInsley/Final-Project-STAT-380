@@ -4,6 +4,8 @@ authors: "Kim Mincin & Drew Insley"
 due date: "April 30, 2019"
 output:
   html_notebook:
+    df_print: paged
+    highlight: tango
     theme: journal
 ---
 
