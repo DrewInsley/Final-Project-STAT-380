@@ -238,9 +238,10 @@ Happy_dendo <-
 
 labels <- Happiness_Top_25$country
 
+par(bg = "grey")
 Happy_dendo %>%
   plot(cex = 0.9, labels = labels, lwd = 2,
-       main = "Top 25 Happiest Countries Dendogram")
+       main = "Top 25 Happiest Countries Dendogram", col = "dark blue", col.axis = "dark red", col.lab = "dark red", col.sub = "dark red")
 ```
 
 **The dendogram shows the dissimilarity among the top 25 happiest countries. The dendogram confirms that countries in the same region have low levels of dissimilarity.**
